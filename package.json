@@ -17,6 +17,7 @@
     "url": "https://github.com/geek-bhuvnesh/PPL_Backend/issues"
   },
   "dependencies": {
-    "koa": "~1.0.0"
+    "koa": "~1.0.0",
+    "mongoose": "~4.1.3"
   }
 }
