@@ -2,7 +2,7 @@ var koa = require('koa');
 var app = koa();
 
 app.use(function *(){
-  this.body = 'Hello World';
+  this.body = 'Welcome to PPL';
 });
 
 app.listen(3000);

@@ -1,0 +1,70 @@
+var mongoose = require('mongoose');
+var config = require('./config');
+
+// Mongoose connection to MongoDB 
+mongoose.connect(config.url, function (error) {
+    if (error) {
+        console.log(error);
+    }
+});
+
+var db = mongoose.connection;
+db.on('error', function callback(err) {
+    console.log("Database connection failed. Error: " + err);
+});
+db.once('open', function callback() {
+   console.log("Database connection successful.");
+});
+
+var Schema = mongoose.Schema,Objectid = Schema.ObjectId;
+
+var userSchema = new Schema({
+  username : {type:String,default:""},
+  email: {type:String,default:""},
+  password : {type:String,default:""},
+  reset_pass_token:{type: String,default: ""},
+  verification_code:{type:String,default:""},
+  verified:{type:String,default:false},
+  role : String                                            //['user', 'admin'],
+},{"collection":"userCollection"});
+
+module.exports.userCollection  = mongoose.model('userCollection', userSchema);
+
+var postSchema = new Schema({	
+  userId : [{ type: mongoose.Schema.Types.ObjectId, ref: 'userCollection' }],
+  postTitle : {type:String,default:""},
+  creatorImage: {type:String,default:""},
+  creatorName : {type:String,default:""},
+  createdOn : {type:Date},
+  catType : {type:String},
+  postImage:{type: String,default: ""},
+  comments:[{
+  	         creatorId:{type:String},
+  	         creatorName:{type:String},
+             creatorComment:{type:String},
+             commentedOn:{type:Date,default: Date.now},
+           }],
+  commentcount :{type:Number,default:0}
+  likeby:[{type:Array,default:[]}],
+  likecount :{type:Number,default:0},
+  flagby:[{type:Array,default:[]}],
+  flagcount :{type:Number,default:0}
+
+},{"collection":"postCollection"});
+
+module.exports.postCollection  = mongoose.model('postCollection', postSchema);
+
+var categorySchema = new Schema({
+	catName : {type:String,default:others}
+},{
+	"collection":"categoryCollection"
+})
+module.exports.postCollection  = mongoose.model('categoryCollection', postSchema);
+
+
+var rolesSchema = new mongoose.Schema({
+    'name':{type:String},
+    'actions':[{type:String}]
+});
+
+module.exports.rolesCollection = mongoose.model('roles', rolesSchema);
