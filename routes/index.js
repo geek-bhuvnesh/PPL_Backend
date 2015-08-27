@@ -92,3 +92,31 @@ route.post('/login', function*() {
      this.status = ERR.err_code;
   }
 });
+
+/** Forgot Password
+ *  @param <String> email : Primary email of user
+ *  return a link to change password and send the link through email
+ */
+
+route.post('/forgotpassword',function*() {
+  console.log("POST /users/email/" + this.request.body.email + "/forgotpassword handler start");
+
+  if(!this.request.body.email) {
+    this.body = ({email: 'Email is not valid'});
+    this.status = 400;
+    return;
+  }
+  
+  try {
+    var userExist = yield API.forgotPassword({
+      email: this.request.body.email
+    });
+    this.body = userExist;
+    this.status = 200;
+    console.log("this.body:",JSON.stringify(this.body) + "," + "this.status:",this.status);
+  } catch (err) {
+    var ERR = JSON.parse(err.message);
+    this.body = ERR.err_code + "_" + ERR.message;
+    this.status = ERR.err_code;
+  }
+});

@@ -46,7 +46,7 @@ module.exports.registerUser = function * (opts){
             var mailOptions = {
                   from: 'bhuvnesh.kumar@daffodilsw.com', // sender address
                   to: result.email, // list of receivers
-                  text: "http://192.168.100.44:3000/#/verify-email/" + result.email + "/" + result.verification_code // plaintext body
+                  text: "http://192.168.100.44:3000/#/verifyuseremail/" + result.email + "/" + result.verification_code // plaintext body
             };
 
             transporter.sendMail(mailOptions, function(error, info) {
@@ -142,4 +142,66 @@ module.exports.loginUser = function * (opts){
 
 var isValidPassword = function(password,user){ 
   return bcrypt.compareSync(password,user.password);
+}
+
+/**
+ *  Forgot password
+ */
+exports.forgotPassword = function*(opts) {
+  console.log("User API forgotPassword: START OPTS:",opts);
+  //console.log("user API verifyUser: email: "+ opts.email);
+  if (opts.email){
+     opts.email = opts.email.toLowerCase();
+     console.log("opts.email:",opts.email);
+  }else{
+    throw new Error('400_email_can_not_be_blank');
+  }
+
+  try {
+      var userForgotPassword = {};
+      userForgotPassword = yield db.userCollection.findOne({"email": opts.email});
+      if (!userForgotPassword)  
+         throw new Error(JSON.stringify({"message":"there_is_no_user_with_this_email'","err_code":400}));
+
+      var resetPasswordToken = "";
+      var text = "abcdefghijklmnopqrstuvwxyz0123456789";
+      for (var i=0; i < 8; i++) {
+        resetPasswordToken = resetPasswordToken + text.charAt(Math.floor(Math.random() * text.length));
+       }
+
+       var passwordUpdate = yield db.userCollection.update({"email": opts.email},{"$set":{"reset_pass_token":resetPasswordToken}});
+       console.log("passwordUpdate:",passwordUpdate);
+        if (passwordUpdate) {
+            //var transporter = nodemailer.createTransport();
+            var transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: 'bhuvnesh.kumar@daffodilsw.com',
+                    pass: '2015meias1rank'
+                }
+            });
+      
+            var mailOptions = {
+                 from: 'bhuvnesh.kumar@daffodilsw.com', // sender address
+                 to: opts.email, // list of receivers
+                 text: "http://192.168.100.44:3000/#/resetpassword/"+ opts.email + "/" + resetPasswordToken   // plaintext body
+                        //text: resetPassInfo.password, // plaintext body
+            };
+            transporter.sendMail(mailOptions, function(error, info) {
+                if (error) {
+                   console.log(error);
+                } else {
+                   console.log('Message sent: ' + info.response);
+                }
+            });
+         
+         userForgotPassword["resetPasswordToken"] = resetPasswordToken
+         console.log("userForgotPassword:",userForgotPassword); 
+         return userForgotPassword;
+                  
+      } 
+    
+  } catch(err){
+     console.log("err:",err);
+  }
 }
