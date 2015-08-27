@@ -73,3 +73,22 @@ route.get('/verifyuser/:email/:verification_code', function*() {
     }
 
 });
+
+
+route.post('/login', function*() {
+  console.log(" Request type --  "+JSON.stringify(this.request.type));
+  console.log(" Request body login ---  " ,this.request.body);
+  try {
+    var user = yield API.loginUser({
+      "email":this.request.body.email,
+      "password":this.request.body.password
+     });
+      console.log("user:" ,user);
+      this.body = user;
+  } catch (err) {
+     console.log("err login:" ,err);
+     var ERR = JSON.parse(err.message);
+     this.body = ERR.err_code + "_" + ERR.message;
+     this.status = ERR.err_code;
+  }
+});

@@ -104,8 +104,6 @@ module.exports.verifyUser = function * (opts){
              return userVerifyResult.toObject();
           } 
          
-          
-
         } else {
           throw new Error(JSON.stringify({"message":"User can't be verified","err_code":404}));
         }
@@ -117,4 +115,31 @@ module.exports.verifyUser = function * (opts){
         throw err;
     }
 
+}
+
+module.exports.loginUser = function * (opts){
+  console.log("loginUser post data:" + JSON.stringify(opts));
+  try{
+      if(!opts.email|| !opts.password){
+        //this.throw(404, 'Username and password not entered,plz enter details:');
+          throw new Error(JSON.stringify({"message":"Username and password not entered,plz enter details","err_code":404}));
+      }
+      var user= {};
+      var user = yield db.userCollection.findOne({"email":opts.email});
+      console.log("user fields " + JSON.stringify(user));
+    
+      if (!user.email) {
+          throw new Error(JSON.stringify({"message":"User not registered please signup","err_code":401}));
+      } else if (isValidPassword(opts.password,user)){          //order important
+          return user.toObject();
+      } 
+   }
+   catch (err){
+      console.error('catch me----',err.message);
+      throw new Error(JSON.stringify({"message":"username_or_password_does_not_match","err_code":403}));  
+   }
+}
+
+var isValidPassword = function(password,user){ 
+  return bcrypt.compareSync(password,user.password);
 }
