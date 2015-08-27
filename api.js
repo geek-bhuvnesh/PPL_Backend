@@ -31,7 +31,7 @@ module.exports.registerUser = function * (opts){
           userAdd["verification_code"] = veri_code;
 
           console.log("userAdd:",userAdd);
-	        var result = yield db.userCollection.create(userAdd);
+	      var result = yield db.userCollection.create(userAdd);
           console.log("this.body user registered:",result);
           if(result){
             /*var transporter = nodemailer.createTransport();*/
@@ -73,4 +73,48 @@ module.exports.registerUser = function * (opts){
 // Generates hash using bcrypt
 var createHash = function(password){
  return bcrypt.hashSync(password, bcrypt.genSaltSync(10), null);
+}
+
+
+module.exports.verifyUser = function * (opts){
+  console.log("verifyUser data:" + JSON.stringify(opts));
+  try {
+      var user = {};
+      var user = yield db.userCollection.findOne({"email":opts.email});
+      console.log("-----------------------------");
+      console.log("user verify result API:",user);
+
+      if(!user) {
+          throw new Error(JSON.stringify({"message":"User not found So can't be verified","err_code":404}));
+      } else {
+        console.log("1:",user.verification_code);
+        console.log("2:",opts.verification_code);
+
+        if (user.verification_code == opts.verification_code) {
+
+          var userVerifyResult = yield db.userCollection.findOneAndUpdate({"email":opts.email},{"$set":{"verified":true}}); 
+          /*db.userCollection.findOneAndUpdate({"email":opts.email},{"$set":{"verified":true}},function(err,result1){
+            console.log("err:",err);
+            console.log("result:",result);
+          }); 
+           */
+          console.log("userVerifyResult:",userVerifyResult);
+          if(userVerifyResult){
+             userVerifyResult["verified"] = true;
+             return userVerifyResult.toObject();
+          } 
+         
+          
+
+        } else {
+          throw new Error(JSON.stringify({"message":"User can't be verified","err_code":404}));
+        }
+
+      }
+
+    } catch (err) {
+        console.log(err.stack);
+        throw err;
+    }
+
 }
