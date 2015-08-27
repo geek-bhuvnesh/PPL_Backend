@@ -44,7 +44,7 @@ var postSchema = new Schema({
              creatorComment:{type:String},
              commentedOn:{type:Date,default: Date.now},
            }],
-  commentcount :{type:Number,default:0}
+  commentcount :{type:Number,default:0},
   likeby:[{type:Array,default:[]}],
   likecount :{type:Number,default:0},
   flagby:[{type:Array,default:[]}],
@@ -55,7 +55,7 @@ var postSchema = new Schema({
 module.exports.postCollection  = mongoose.model('postCollection', postSchema);
 
 var categorySchema = new Schema({
-	catName : {type:String,default:others}
+	catName : {type:String,default:"others"}
 },{
 	"collection":"categoryCollection"
 })
