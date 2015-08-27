@@ -15,7 +15,7 @@ app.use(require('koa-cors')({
 });*/
 
 
-
+app.use(bodyParser());
 app.use(function *(next){
   try
     {

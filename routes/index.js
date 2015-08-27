@@ -5,10 +5,9 @@ var route = new router();
 
 exports = module.exports = route;
 
-route.post('/register/:id', function*() {
+route.post('/register', function*() {
   console.log(" Request type ---  " + JSON.stringify(this.request.type));
   console.log(" Request body signup ---  " ,this.request.body);
-  console.log(" Request body signup ---  " ,this.params.id);
 
   /*try {
     var user = yield API.registerUser({
