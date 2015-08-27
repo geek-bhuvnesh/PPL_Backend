@@ -120,3 +120,31 @@ route.post('/forgotpassword',function*() {
     this.status = ERR.err_code;
   }
 });
+
+route.post('/resetpassword/:email', function *() {
+  console.log("POST /resetpassword/" + this.request.body.reset_pass_token + "/" + this.params.email + " handler start");
+  var validation_errors = [];
+ 
+  console.log("Reset Password body:" ,this.request.body);
+
+  if (!this.request.body && !this.request.body.new_password) {
+    this.body = {};
+    this.body.errors = {password: "new_password is not valid"};
+    this.status = 400;
+    return;  
+  }
+  console.log("index resetpassword: params" + JSON.stringify(this.params.email));
+  try {
+    var user = yield API.resetPassword({
+      email: this.params.email,
+      new_password: this.request.body ? this.request.body.new_password : null,
+      reset_pass_token: this.request.body.reset_pass_token
+    });
+    this.body = user;
+    this.status = 200;
+  } catch (err) {
+    var ERR = JSON.parse(err.message);
+    this.body = ERR.err_code + "_" + ERR.message;
+    this.status = ERR.err_code;
+  }
+});

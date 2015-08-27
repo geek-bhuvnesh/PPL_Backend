@@ -205,3 +205,59 @@ exports.forgotPassword = function*(opts) {
      console.log("err:",err);
   }
 }
+
+
+/**
+ * Reset Password and return User
+ * @param {string} new_password - new_password of User
+ *
+ * @return {object} Reset - User
+ */
+
+
+exports.resetPassword = function*(opts) {
+
+  console.log("UserAPI resetPassword START:" ,opts);
+
+  if (!opts.new_password) {
+    console.log("API resetPassword: New password not given");
+    throw new Error(JSON.stringify({"message":"new_password_cannot_be_blank","err_code":400}));
+  }
+  if (!opts.reset_pass_token) { //fpcode is mandatory for resetting own password.
+    console.log("API resetPassword: reset_pass_token is not given");
+    throw new Error(JSON.stringify({"message":"reset_pass_token_is_not_given","err_code":400}));
+  }
+
+  var user;
+  var filter = {};
+  filter.reset_pass_token = opts.reset_pass_token;
+  filter.email = opts.email;
+  user = yield db.userCollection.findOne(filter);
+
+  console.log("user in API:" ,user);
+
+  // console.log("UserAPI resetPassword user:" +JSON.stringify(user));
+  if (!user) {
+    throw new Error(JSON.stringify({"message":"user_doesnot_exist_for_this_email","err_code":400}));
+  }
+  if(user){
+     var passwordeHashed = createHash(opts.new_password);
+     console.log("passwordeHashed:",passwordeHashed); 
+     var result = yield db.userCollection.update({"email": opts.email},{"$set":{"password":passwordeHashed}});
+     console.log("resetPassword res:",result);
+        // this.throw(200,res);
+     if(result){
+      var resetPassResult = {};
+      resetPassResult = user;
+      console.log("resetPassResult Before Password:",resetPassResult);
+      resetPassResult["password"] = opts.new_password;
+      console.log("resetPassResult After Password:",resetPassResult);
+      return resetPassResult;
+
+     }else{
+        throw new Error(JSON.stringify({"message":"Error in Password Set","err_code":400}));
+     }
+
+  }
+
+}
