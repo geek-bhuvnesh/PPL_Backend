@@ -76,6 +76,7 @@ route.get('/verifyuser/:email/:verification_code', function*() {
 
 
 route.post('/login', function*() {
+  
   console.log(" Request type --  "+JSON.stringify(this.request.type));
   console.log(" Request body login ---  " ,this.request.body);
   try {

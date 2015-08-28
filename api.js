@@ -2,6 +2,23 @@ var db = require('./db.js');
 var self = require('./api.js');
 var bcrypt = require('bcrypt-nodejs');
 var nodemailer = require('nodemailer'); 
+var crypto = require('crypto');
+
+var encrypt = function(text) {
+    
+   console.log("encrypt text:",text); 
+   var cipher = crypto.createCipher('aes-256-cbc', 'd6F3Efeq')
+   var crypted = cipher.update(text, 'utf8', 'hex')
+   crypted = crypted + cipher.final('hex');
+   return crypted;
+}
+
+var decrypt = function(text) {
+   var decipher = crypto.createDecipher('aes-256-cbc', 'd6F3Efeq')
+   var dec = decipher.update(text, 'hex', 'utf8')
+   dec += decipher.final('utf8');
+   return dec;
+}
 
 module.exports.registerUser = function * (opts){
   console.log("registerUser post data:" + JSON.stringify(opts));
@@ -42,11 +59,14 @@ module.exports.registerUser = function * (opts){
                     pass: '2015meias1rank'
                 }
             });
+
+            var encypt_mail = encrypt(result.email);
+            console.log("encypt_mail:",encypt_mail);
       
             var mailOptions = {
                   from: 'bhuvnesh.kumar@daffodilsw.com', // sender address
                   to: result.email, // list of receivers
-                  text: "http://192.168.100.44:3000/#/verifyuseremail/" + result.email + "/" + result.verification_code // plaintext body
+                  text: "http://192.168.100.44:3000/#/verifyuseremail/" + encypt_mail + "/" + result.verification_code // plaintext body
             };
 
             transporter.sendMail(mailOptions, function(error, info) {
