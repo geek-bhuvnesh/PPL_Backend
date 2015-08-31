@@ -20,7 +20,7 @@ var Schema = mongoose.Schema,Objectid = Schema.ObjectId;
 
 var userSchema = new Schema({
   username : {type:String,default:""},
-  email: {type:String,default:""},
+  email: {type:String,default:"",required: true},
   password : {type:String,default:""},
   reset_pass_token:{type: String,default: ""},
   verification_code:{type:String,default:""},
@@ -32,6 +32,7 @@ module.exports.userCollection  = mongoose.model('userCollection', userSchema);
 
 var postSchema = new Schema({	
   userId : [{ type: mongoose.Schema.Types.ObjectId, ref: 'userCollection' }],
+  /*userId : {type:String,default:""},*/
   postTitle : {type:String,default:""},
   creatorImage: {type:String,default:""},
   creatorName : {type:String,default:""},
@@ -52,14 +53,17 @@ var postSchema = new Schema({
 
 },{"collection":"postCollection"});
 
+postSchema.index({userId: 1, postTitle: 1}, {unique: true});
+
 module.exports.postCollection  = mongoose.model('postCollection', postSchema);
+
 
 var categorySchema = new Schema({
 	catName : {type:String,default:"others"}
 },{
 	"collection":"categoryCollection"
-})
-module.exports.postCollection  = mongoose.model('categoryCollection', postSchema);
+});
+module.exports.categoryCollection  = mongoose.model('categoryCollection', categorySchema);
 
 
 var rolesSchema = new mongoose.Schema({

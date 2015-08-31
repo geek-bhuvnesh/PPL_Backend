@@ -149,3 +149,4 @@ route.post('/resetpassword/:email', function *() {
     this.status = ERR.err_code;
   }
 });
+
