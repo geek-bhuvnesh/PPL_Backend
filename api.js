@@ -60,13 +60,13 @@ module.exports.registerUser = function * (opts){
                 }
             });
 
-            var encypt_mail = encrypt(result.email);
-            console.log("encypt_mail:",encypt_mail);
+           /* var encypt_mail = encrypt(result.email);
+            console.log("encypt_mail:",encypt_mail);*/
       
             var mailOptions = {
                   from: 'bhuvnesh.kumar@daffodilsw.com', // sender address
                   to: result.email, // list of receivers
-                  text: "http://192.168.100.44:3000/#/verifyuseremail/" + encypt_mail + "/" + result.verification_code // plaintext body
+                  text: "http://192.168.100.44:8000/#/verifyuseremail/" + result.email + "/" + result.verification_code // plaintext body
             };
 
             transporter.sendMail(mailOptions, function(error, info) {
@@ -98,6 +98,7 @@ var createHash = function(password){
 
 module.exports.verifyUser = function * (opts){
   console.log("verifyUser data:" + JSON.stringify(opts));
+  console.log("verifyUser data:" + opts.email);
   try {
       var user = {};
       var user = yield db.userCollection.findOne({"email":opts.email});
@@ -204,7 +205,7 @@ exports.forgotPassword = function*(opts) {
             var mailOptions = {
                  from: 'bhuvnesh.kumar@daffodilsw.com', // sender address
                  to: opts.email, // list of receivers
-                 text: "http://192.168.100.44:3000/#/resetpassword/"+ opts.email + "/" + resetPasswordToken   // plaintext body
+                 text: "http://192.168.100.44:8000/#/resetpassword/"+ opts.email + "/" + resetPasswordToken   // plaintext body
                         //text: resetPassInfo.password, // plaintext body
             };
             transporter.sendMail(mailOptions, function(error, info) {
