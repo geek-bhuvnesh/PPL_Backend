@@ -190,7 +190,28 @@ route.post('/test', function*() {
   }
 });
 
-
-
-
-
+/**
+ * @name get /logout
+ * @desc
+ * will remove user from session
+ *
+ * Parameter          | Type     | Required | Description
+ * :------------------|:---------|:---------|:-----------------------------------------------------
+ *                    |          |          | 
+ *
+ * ** Returns **
+ * 
+ *
+ * @example
+ *
+ * get /logout
+ *
+ */
+route.get('/logout', function*() {
+  console.log("LOGOUT CALLED:" ,this.session);
+  // destroy the session
+  // this.session.passport = {};
+  this.session = null;
+  // this.redirect(this.request.query.redirect_url || 'back');
+  this.body={"message":"Successfully logout"};
+});
