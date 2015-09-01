@@ -150,3 +150,47 @@ route.post('/resetpassword/:email', function *() {
   }
 });
 
+route.post('/post', function*() {
+  
+  console.log(" Request type --  "+JSON.stringify(this.request.type));
+  console.log(" Request body post ---  " ,this.request.body);
+  try {
+    var post = yield API.postDetails({
+      "postedBy":this.request.body.postedBy,
+      "postTitle":this.request.body.postTitle,
+     /* "creatorImage":this.request.body.creatorImage,
+      "creatorName":this.request.body.creatorName,*/
+      "postedOn":this.request.body.postedOn,
+      "catType":this.request.body.catType,
+      "postImage":this.request.body.postImage
+     });
+     console.log("post:" ,post);
+     this.body = post;
+  } catch (err) {
+     console.log("err login:" ,err);
+     var ERR = JSON.parse(err.message);
+     this.body = ERR.err_code + "_" + ERR.message;
+     this.status = ERR.err_code;
+  }
+});
+
+route.post('/test', function*() {
+  
+  console.log(" Request type --  "+JSON.stringify(this.request.type));
+  console.log(" Request body test ---  " ,this.request.body);
+  try {
+    var test = yield API.test(this.request.body);
+     console.log("test:" ,test);
+     this.body = test;
+  } catch (err) {
+     console.log("err login:" ,err);
+     var ERR = JSON.parse(err.message);
+     this.body = ERR.err_code + "_" + ERR.message;
+     this.status = ERR.err_code;
+  }
+});
+
+
+
+
+

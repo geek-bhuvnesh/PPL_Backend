@@ -25,26 +25,34 @@ var userSchema = new Schema({
   reset_pass_token:{type: String,default: ""},
   verification_code:{type:String,default:""},
   verified:{type:String,default:false},
-  role : String                                            //['user', 'admin'],
+  role : String,
+  posts : [{ type: Schema.Types.ObjectId, ref: 'postCollection' }]                                            //['user', 'admin'],
 },{"collection":"userCollection"});
 
 module.exports.userCollection  = mongoose.model('userCollection', userSchema);
 
 var postSchema = new Schema({	
-  userId : [{ type: mongoose.Schema.Types.ObjectId, ref: 'userCollection' }],
+  postedBy : { type: mongoose.Schema.Types.ObjectId, ref: 'userCollection' },
   /*userId : {type:String,default:""},*/
   postTitle : {type:String,default:""},
-  creatorImage: {type:String,default:""},
-  creatorName : {type:String,default:""},
-  createdOn : {type:Date},
+  /*creatorImage: {type:String,default:""},
+  creatorName : {type:String,default:""},*/
+  postedOn : {type:Date ,default: Date.now},
   catType : {type:String},
   postImage:{type: String,default: ""},
-  comments:[{
+  comments : [{
+                commentText : {type:String},
+                createdBy: {
+                    type: mongoose.Schema.Types.ObjectId,ref: 'userCollection'
+                },
+                commentedOn : {type: Date,default: Date.now}
+             }],
+  /*comments:[{
   	         creatorId:{type:String},
   	         creatorName:{type:String},
              creatorComment:{type:String},
              commentedOn:{type:Date,default: Date.now},
-           }],
+  }],*/
   commentcount :{type:Number,default:0},
   likeby:[{type:Array,default:[]}],
   likecount :{type:Number,default:0},
