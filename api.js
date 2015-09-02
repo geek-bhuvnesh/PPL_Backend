@@ -343,4 +343,23 @@ module.exports.test = function * (opts){
 }
 
 
+module.exports.allCategories = function * () {
+
+ console.log("UserAPI allCategories START");
+ try {
+
+    var allCategories = yield db.categoryCollection.find({});
+
+    if (!allCategories) throw new Error(JSON.stringify({"message":"no_category_found","err_code":400}));
+     console.log("UserAPI All Categories:" , allCategories);
+     return allCategories;
+  }catch (err){
+     console.error(err.message);
+     throw err;
+  }
+ 
+
+}
+
+
 

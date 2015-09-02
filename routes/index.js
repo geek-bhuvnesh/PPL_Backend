@@ -215,3 +215,19 @@ route.get('/logout', function*() {
   // this.redirect(this.request.query.redirect_url || 'back');
   this.body={"message":"Successfully logout"};
 });
+
+
+route.get('/getAllCategories', function*() {
+   console.log("Normal Request get request");
+   try {
+    var allCategories = yield API.allCategories();
+    console.log("All Categories:" ,allCategories);
+    this.body = allCategories;
+    this.status = 200;
+  } catch (err) {
+    var ERR = JSON.parse(err.message);
+    this.body = ERR.err_code + "_" + ERR.message;
+    this.status = ERR.err_code;
+  }
+
+});
