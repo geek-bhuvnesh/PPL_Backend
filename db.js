@@ -67,7 +67,8 @@ module.exports.postCollection  = mongoose.model('postCollection', postSchema);
 
 
 var categorySchema = new Schema({
-	catName : {type:String,default:"others"}
+	catName : {type:String,default:"others"},
+  image : {type:String}
 },{
 	"collection":"categoryCollection"
 });
