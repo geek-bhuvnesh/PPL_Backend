@@ -231,3 +231,18 @@ route.get('/getAllCategories', function*() {
   }
 
 });
+
+route.get('/getAllPosts', function*() {
+   console.log("Normal Request get request");
+   try {
+    var allPosts = yield API.allPosts();
+    console.log("All Posts:" ,allPosts);
+    this.body = allPosts;
+    this.status = 200;
+  } catch (err) {
+    var ERR = JSON.parse(err.message);
+    this.body = ERR.err_code + "_" + ERR.message;
+    this.status = ERR.err_code;
+  }
+
+});

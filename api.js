@@ -358,6 +358,23 @@ module.exports.allCategories = function * () {
      throw err;
   }
  
+}
+
+module.exports.allPosts = function * () {
+
+ console.log("UserAPI allPosts START");
+ try {
+
+    var allPosts = yield db.postCollection.find({}).populate("postedBy");
+
+    if (!allPosts) throw new Error(JSON.stringify({"message":"no_posts_found","err_code":400}));
+     console.log("UserAPI All Categories:" , allPosts);
+     return allPosts;
+  }catch (err){
+     console.error(err.message);
+     throw err;
+  }
+ 
 
 }
 
