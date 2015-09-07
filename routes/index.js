@@ -4,6 +4,8 @@ var router = require("koa-router");
 var route = new router();
 var multer = require('koa-multer');
 var API = require("../api.js");
+var configPassport = require('./passport.js');
+var passport = require('koa-passport');
 
 exports = module.exports = route;
 
@@ -30,7 +32,7 @@ route.post('/register', function*() {
        return;
     }
 
-    try {
+    /*try {
       var user = yield API.registerUser({
         "firstname":this.request.body.firstname,
         "lastname" : this.request.body.lastname,
@@ -45,10 +47,36 @@ route.post('/register', function*() {
      var ERR = JSON.parse(err.message);
      this.body = ERR.err_code + "_" + ERR.message;
      this.status = ERR.err_code;
+    }*/
+
+    var p = this;
+    try {
+      yield passport.authenticate('local-signup', function*(err, user, info){
+        if(err){
+          var ERR = JSON.parse(err.message);
+          p.status = ERR.err_code;
+          p.body = ERR.err_code + "_" + ERR.message;
+          return;
+        }
+
+        if(!user){
+          p.status = 400;
+          p.body = 400 + "_username_or_password_not_valid";
+          return;
+        }
+        p.body = user;
+        return;
+      })  
+    } catch(err) {
+      p.status = 500;
+      p.body = err;
+      return;
     }
   }
     
 });
+
+
 
 route.get('/verifyuser/:email/:verification_code', function*() {
   console.log(" Request type ---  " + JSON.stringify(this.request.type));
@@ -76,7 +104,7 @@ route.get('/verifyuser/:email/:verification_code', function*() {
 });
 
 
-route.post('/login', function*() {
+/*route.post('/login', function*() {
   
   console.log(" Request type --  "+JSON.stringify(this.request.type));
   console.log(" Request body login ---  " ,this.request.body);
@@ -87,12 +115,51 @@ route.post('/login', function*() {
      });
       console.log("user:" ,user);
       this.body = user;
+
   } catch (err) {
      console.log("err login:" ,err);
      var ERR = JSON.parse(err.message);
      this.body = ERR.err_code + "_" + ERR.message;
      this.status = ERR.err_code;
   }
+});*/
+
+
+route.post('/login', function*(next) {
+  console.log(" Request type ---  "+JSON.stringify(this.request.type));
+  console.log(" Request body login ---  " ,this.request.body); 
+  if(this.is('application/json')){
+    var p = this;
+    
+   try {
+    yield passport.authenticate('local-login', function*(err, user, info){
+      console.log("err login index:" ,err);
+      console.log("user login index:" ,user);
+      console.log("info login index:" ,info);
+      if(err){
+        var ERR = JSON.parse(err.message);
+        p.status = ERR.err_code;
+        p.body = ERR.err_code + "_" + ERR.message;
+        return;
+      }
+      if(!user){
+        p.status = 400;
+        p.body = 400 + "_username_or_password_not_valid";
+        return;
+      }
+      p.body = user;
+     /* var session = p.cookies.get("epikko-session");
+      yield cart_API.updateCart({"session_id":session , "user_id":user._id})*/
+      yield p.login(user)
+      return;
+    }).call(this,next)  
+   }catch(err){
+      p.status = 500;
+      p.body = err;
+      return;
+   } 
+  
+  } 
 });
 
 /** Forgot Password

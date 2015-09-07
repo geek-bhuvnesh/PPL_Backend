@@ -141,13 +141,17 @@ module.exports.verifyUser = function * (opts){
 module.exports.loginUser = function * (opts){
   console.log("loginUser post data:" + JSON.stringify(opts));
   try{
-      if(!opts.email|| !opts.password){
+      if(!opts.email||!opts.password){
         //this.throw(404, 'Username and password not entered,plz enter details:');
           throw new Error(JSON.stringify({"message":"Username and password not entered,plz enter details","err_code":404}));
       }
-      var user= {};
-      var user = yield db.userCollection.findOne({"email":opts.email});
+      //var user= {};
+      console.log("------------->>>>>>>>>>>>>>>>>>>>>>>>>>>");
+      //var user = opts;
+      var user = yield db.userCollection.findOne({email: opts.email.toLowerCase()}).exec();
+   /*   var user = yield db.userCollection.findOne({"email":opts.email});*/
       console.log("user fields " + JSON.stringify(user));
+      console.log("user typeof  " + typeof user);
       if (!user) {
           throw new Error(JSON.stringify({"message":"User not registered please signup","err_code":401}));
       } else if (isValidPassword(opts.password,user)){
@@ -168,6 +172,18 @@ module.exports.loginUser = function * (opts){
 var isValidPassword = function(password,user){ 
   return bcrypt.compareSync(password,user.password);
 }
+
+/**
+ * Try login with username and password
+ */
+exports.findOneByid = function*(opts) {
+  console.log('UserAPI findOneByid: START');
+  var user = yield db.userCollection.findOne({_id: opts.id}).exec();
+  if (user) {
+    return user;
+  }
+}
+
 
 /**
  *  Forgot password
