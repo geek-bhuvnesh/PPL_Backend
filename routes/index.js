@@ -2,6 +2,7 @@
 
 var router = require("koa-router");
 var route = new router();
+var multer = require('koa-multer');
 var API = require("../api.js");
 
 exports = module.exports = route;
@@ -116,6 +117,7 @@ route.post('/forgotpassword',function*() {
     this.status = 200;
     console.log("this.body:",JSON.stringify(this.body) + "," + "this.status:",this.status);
   } catch (err) {
+    console.log("err forgot password in index:",err);
     var ERR = JSON.parse(err.message);
     this.body = ERR.err_code + "_" + ERR.message;
     this.status = ERR.err_code;
@@ -159,15 +161,18 @@ route.post('/post', function*() {
       "postedBy":this.request.body.postedBy,
       "postTitle":this.request.body.postTitle,
      /* "creatorImage":this.request.body.creatorImage,
-      "creatorName":this.request.body.creatorName,*/
-      "postedOn":this.request.body.postedOn,
+      "creatorName":this.request.body.creatorName,
+      "postedOn":this.request.body.postedOn,*/
       "catType":this.request.body.catType,
       "postImage":this.request.body.postImage
      });
      console.log("post:" ,post);
      this.body = post;
   } catch (err) {
-     console.log("err login:" ,err);
+     console.log("err index:" ,err);
+     /*console.log(" err.message index:" , err.message);
+      console.log("err.err_code index:" ,err.err_code);
+      console.log("err login:" ,err);*/
      var ERR = JSON.parse(err.message);
      this.body = ERR.err_code + "_" + ERR.message;
      this.status = ERR.err_code;
@@ -246,3 +251,23 @@ route.get('/getAllPosts', function*() {
   }
 
 });
+
+/*
+ * @name
+ * @To upload Imge
+ */
+
+route.post('/imageUpload', function*() {
+
+    try {
+       /* console.log("Index:Requested Data:" + JSON.stringify(this.request.body));
+        console.log("Index: Uploaded files:", this.req.files);*/
+        this.body = this.req.files.file;
+        this.status = 200;
+    } catch (err) {
+        console.log(err.stack);
+    }
+
+
+});
+

@@ -26,6 +26,7 @@ var userSchema = new Schema({
   verification_code:{type:String,default:""},
   verified:{type:String,default:false},
   role : String,
+  photo: {type:String,default :""},
   posts : [{ type: Schema.Types.ObjectId, ref: 'postCollection' }]                                            //['user', 'admin'],
 },{"collection":"userCollection"});
 
@@ -61,7 +62,7 @@ var postSchema = new Schema({
 
 },{"collection":"postCollection"});
 
-postSchema.index({userId: 1, postTitle: 1}, {unique: true});
+postSchema.index({postTitle: 1}, {unique: true});
 
 module.exports.postCollection  = mongoose.model('postCollection', postSchema);
 

@@ -113,7 +113,7 @@ module.exports.verifyUser = function * (opts){
 
         if (user.verification_code == opts.verification_code) {
 
-          var userVerifyResult = yield db.userCollection.findOneAndUpdate({"email":opts.email},{ 'new': true },{"$set":{"verified":true}}); 
+          var userVerifyResult = yield db.userCollection.findOneAndUpdate({"email":opts.email},{"$set":{"verified":true}}); 
           /*db.userCollection.findOneAndUpdate({"email":opts.email},{"$set":{"verified":true}},function(err,result1){
             console.log("err:",err);
             console.log("result:",result);
@@ -121,7 +121,7 @@ module.exports.verifyUser = function * (opts){
            */
           console.log("userVerifyResult:",userVerifyResult);
           if(userVerifyResult){
-             //userVerifyResult["verified"] = true;
+             userVerifyResult["verified"] = true;
              return userVerifyResult.toObject();
           } 
          
@@ -148,12 +148,15 @@ module.exports.loginUser = function * (opts){
       var user= {};
       var user = yield db.userCollection.findOne({"email":opts.email});
       console.log("user fields " + JSON.stringify(user));
-    
       if (!user) {
           throw new Error(JSON.stringify({"message":"User not registered please signup","err_code":401}));
-      } else if (isValidPassword(opts.password,user)){          //order important
+      } else if (isValidPassword(opts.password,user)){
+          console.log("user:",user)          //order important
           return user.toObject();
-      } 
+      } else{
+          console.log("<<<<<<<<<<<<<<<<<");
+          throw new Error(JSON.stringify({"message":"Please Enter valid password","err_code":400}));
+      }
    }
    catch (err){
       console.error('catch me----',err.message);
@@ -182,9 +185,10 @@ exports.forgotPassword = function*(opts) {
   try {
       var userForgotPassword = {};
       userForgotPassword = yield db.userCollection.findOne({"email": opts.email});
-      if (!userForgotPassword)  
-         throw new Error(JSON.stringify({"message":"there_is_no_user_with_this_email'","err_code":400}));
-
+      if (!userForgotPassword){ 
+         throw new Error(JSON.stringify({"message":"there_is_no_user_with_this_email","err_code":400}));
+         return;
+      } 
       var resetPasswordToken = "";
       var text = "abcdefghijklmnopqrstuvwxyz0123456789";
       for (var i=0; i < 8; i++) {
@@ -225,6 +229,7 @@ exports.forgotPassword = function*(opts) {
     
   } catch(err){
      console.log("err:",err);
+     throw err;
   }
 }
 
@@ -299,12 +304,23 @@ module.exports.postDetails = function * (opts){
       if (!post._id) {
           throw new Error(JSON.stringify({"message":"post can't be created","err_code":401}));
       } else {          //order important
-          return post.toObject();
+          var PostWithUserData = yield db.postCollection.findOne({"_id":post._id}).populate("postedBy");
+          console.log("----------------------------"); 
+          console.log("PostWithUserData:",PostWithUserData); 
+          return PostWithUserData.toObject();
       } 
    }
    catch (err){
-      console.error('catch me----',err.message);
-      throw new Error(JSON.stringify({"message":"post can't be created","err_code":403}));  
+      console.log("err",err);
+      console.error('catch code----',err.code);
+      console.error('catch message----',err.message);
+      if(err.code ==11000){
+        //throw new Error({"message":"Post Already Exists with this title,please choose differnt name","err_code":403});
+        throw new Error(JSON.stringify({"message":"Post Already Exists with this title,please choose differnt name","err_code":400})); 
+      } else{
+        throw new Error(JSON.stringify({"message":"post can't be created","err_code":403}));  
+      }
+    
    }
 }
 
