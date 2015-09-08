@@ -425,16 +425,6 @@ module.exports.likeCall = function * (opts){
        throw new Error(JSON.stringify({"message":"There is some error to post like","err_code":400}));
     }
     return updateLikeCount;
-<<<<<<< HEAD
-=======
-
-  }catch (err){
-     console.error(err.message);
-     throw err;
-  }
-
-}
->>>>>>> like_unlike_api
 
   }catch (err){
      console.error(err.message);
