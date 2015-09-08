@@ -425,6 +425,16 @@ module.exports.likeCall = function * (opts){
        throw new Error(JSON.stringify({"message":"There is some error to post like","err_code":400}));
     }
     return updateLikeCount;
+<<<<<<< HEAD
+=======
+
+  }catch (err){
+     console.error(err.message);
+     throw err;
+  }
+
+}
+>>>>>>> like_unlike_api
 
   }catch (err){
      console.error(err.message);
@@ -433,6 +443,26 @@ module.exports.likeCall = function * (opts){
 
 }
 
+
+module.exports.unlikeCall = function * (opts){
+ console.log("unlLike opts in API:",opts);
+ console.log("unlLike by in Api:",opts.likeby);
+  try {
+
+    var unlikeData = yield db.postCollection.findOneAndUpdate({"_id":opts.postid},{"$pull": { "likeby": opts.likeby },"$inc":{"likecount":-1}},{ "new": true });
+    console.log("unlikeData",unlikeData);
+    if(!unlikeData){
+      throw new Error(JSON.stringify({"message":"There is some error to unlike post ","err_code":400}));
+    }
+
+    return  unlikeData;
+   
+  }catch (err){
+     console.error(err.message);
+     throw err;
+  }
+
+}
 
 module.exports.unlikeCall = function * (opts){
  console.log("unlLike opts in API:",opts);
