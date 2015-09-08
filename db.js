@@ -55,9 +55,9 @@ var postSchema = new Schema({
              commentedOn:{type:Date,default: Date.now},
   }],*/
   commentcount :{type:Number,default:0},
-  likeby:[{type:Array,default:[]}],
+  likeby:[{type:String,default:[]}],
   likecount :{type:Number,default:0},
-  flagby:[{type:Array,default:[]}],
+  flagby:[{type:String,default:[]}],
   flagcount :{type:Number,default:0}
 
 },{"collection":"postCollection"});

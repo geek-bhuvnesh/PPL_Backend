@@ -338,3 +338,44 @@ route.post('/imageUpload', function*() {
 
 });
 
+
+route.put('/like/:postid', function*() {
+    console.log("Requested params:",this.params.postid);
+    console.log("Requested body Like:",this.request.body);
+    try {
+      var like = yield API.likeCall({
+         "postid":this.params.postid,
+         "likeby" : this.request.body.likeby
+        });
+        console.log("like:" ,like);
+        this.body = like;
+    }catch (err) {
+        console.log("err login:" ,err);
+        var ERR = JSON.parse(err.message);
+        this.body = ERR.err_code + "_" + ERR.message;
+        this.status = ERR.err_code;
+    } 
+
+
+});
+
+route.put('/unlike/:postid', function*() {
+    console.log("Requested params:",this.params.postid);
+    console.log("Requested body Like:",this.request.body);
+    try {
+      var unlike = yield API.unlikeCall({
+         "postid":this.params.postid,
+         "likeby" : this.request.body.likeby
+        });
+        console.log("unlike:" ,unlike);
+        this.body = unlike;
+    }catch (err) {
+        console.log("err login:" ,err);
+        var ERR = JSON.parse(err.message);
+        this.body = ERR.err_code + "_" + ERR.message;
+        this.status = ERR.err_code;
+    } 
+
+
+});
+
