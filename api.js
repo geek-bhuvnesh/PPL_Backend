@@ -3,6 +3,7 @@ var self = require('./api.js');
 var bcrypt = require('bcrypt-nodejs');
 var nodemailer = require('nodemailer'); 
 var crypto = require('crypto');
+var mongoose = require('mongoose');
 
 var encrypt = function(text) {
     
@@ -393,6 +394,48 @@ module.exports.allPosts = function * () {
  
 
 }
+ 
+module.exports.likeCall = function * (opts){
+ console.log("Like opts in API:",opts);
+ console.log("Like by in Api:",opts.likeby);
+  try {
 
+   /* var likeBy = yield db.postCollection.update({"_id":opts.postid,"likeby" : { "$nin" : [opts.likeby]  } },
+                      { $push: {"likeby": opts.likeby }});*/
+    var likeByData = yield db.postCollection.findOneAndUpdate({"_id":opts.postid},{"$addToSet": { "likeby": opts.likeby} },{ "new": true }).exec();
+    var lengthOfLikeby = likeByData.likeby.length;
+    var updateLikeCount = yield db.postCollection.findOneAndUpdate({"_id":opts.postid},{"$set":{"likecount":lengthOfLikeby}},{ "new": true });
+    if(!updateLikeCount){
+       throw new Error(JSON.stringify({"message":"There is some error to post like","err_code":400}));
+    }
+    return updateLikeCount;
+
+  }catch (err){
+     console.error(err.message);
+     throw err;
+  }
+
+}
+
+
+module.exports.unlikeCall = function * (opts){
+ console.log("unlLike opts in API:",opts);
+ console.log("unlLike by in Api:",opts.likeby);
+  try {
+
+    var unlikeData = yield db.postCollection.findOneAndUpdate({"_id":opts.postid},{"$pull": { "likeby": opts.likeby },"$inc":{"likecount":-1}},{ "new": true });
+    console.log("unlikeData",unlikeData);
+    if(!unlikeData){
+      throw new Error(JSON.stringify({"message":"There is some error to unlike post ","err_code":400}));
+    }
+
+    return  unlikeData;
+   
+  }catch (err){
+     console.error(err.message);
+     throw err;
+  }
+
+}
 
 
