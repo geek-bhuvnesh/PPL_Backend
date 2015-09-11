@@ -13,6 +13,7 @@ var views = require("co-views");
 var passport = require('koa-passport');
 var LocalStrategy = require('passport-local').Strategy;
 
+
 //They take the data from your http POST and parse it into a more usable state
 app.use(require('koa-cors')({
    methods: 'GET,HEAD,PUT,POST,DELETE,OPTIONS', //'POST,PUT,GET'                               //'GET,HEAD,PUT,POST,DELETE,OPTIONS',

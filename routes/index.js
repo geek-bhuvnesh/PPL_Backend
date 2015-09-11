@@ -379,3 +379,41 @@ route.put('/unlike/:postid', function*() {
 
 });
 
+route.get('/getPost/:postid', function*() {
+    console.log("Requested params:",this.params.postid);
+    try {
+      var singlePost = yield API.getPostData({
+         "postid":this.params.postid,
+        });
+        console.log("singlePost:" ,singlePost);
+        this.body = singlePost;
+    }catch (err) {
+        console.log("err login:" ,err);
+        var ERR = JSON.parse(err.message);
+        this.body = ERR.err_code + "_" + ERR.message;
+        this.status = ERR.err_code;
+    } 
+
+
+});
+
+route.post('/addComment', function*() {
+    console.log("Requested params:",this.request.body.postid);
+    try {
+      var comment = yield API.addComment({
+         "postid":this.request.body.postid,
+         "commentText" : this.request.body.commentText,
+         "createdBy" : this.request.body.createdBy
+        });
+        console.log("comment:" ,comment);
+        this.body = comment;
+    }catch (err) {
+        console.log("err login:" ,err);
+        var ERR = JSON.parse(err.message);
+        this.body = ERR.err_code + "_" + ERR.message;
+        this.status = ERR.err_code;
+    } 
+
+
+});
+

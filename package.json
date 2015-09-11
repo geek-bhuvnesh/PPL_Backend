@@ -35,6 +35,7 @@
     "path": "~0.11.14",
     "koa-passport": "~1.1.6",
     "passport-local": "~1.0.0",
-    "co": "~4.6.0"
+    "co": "~4.6.0",
+    "mongoose-reverse-populate": "~1.1.0"
   }
 }

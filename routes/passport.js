@@ -27,7 +27,13 @@ passport.deserializeUser(function(req, id, done) {
       done(err)
     }
     done(null,user);
-  })()
+  }).then(function(value) {
+       /*console.log("value:",user);
+       done(null, user);*/
+  }, function (err) {
+       console.error("err after than:",err.stack);
+       done(err,null);
+  });
 })  
 
 passport.use('local-login', new LocalStrategy({passReqToCallback:true,usernameField: 'email'},function(req, email, password, done) {

@@ -4,6 +4,7 @@ var bcrypt = require('bcrypt-nodejs');
 var nodemailer = require('nodemailer'); 
 var crypto = require('crypto');
 var mongoose = require('mongoose');
+var reversePopulate = require('mongoose-reverse-populate');
 
 var encrypt = function(text) {
     
@@ -321,7 +322,7 @@ module.exports.postDetails = function * (opts){
       if (!post._id) {
           throw new Error(JSON.stringify({"message":"post can't be created","err_code":401}));
       } else {          //order important
-          var PostWithUserData = yield db.postCollection.findOne({"_id":post._id}).populate("postedBy");
+          var PostWithUserData = yield db.postCollection.findOne({"_id":post._id}).populate('postedBy').populate('comments.createdBy');
           console.log("----------------------------"); 
           console.log("PostWithUserData:",PostWithUserData); 
           return PostWithUserData.toObject();
@@ -359,7 +360,7 @@ module.exports.test = function * (opts){
 
   try{
       var test= {};
-      var test = yield db.postCollection.find({}).populate("postedBy");
+      var test = yield db.postCollection.find({}).populate('postedBy').populate('comments.createdBy');
 
       console.log("test fields: " + JSON.stringify(test));
       return test;
@@ -398,7 +399,7 @@ module.exports.allPosts = function * () {
  console.log("UserAPI allPosts START");
  try {
 
-    var allPosts = yield db.postCollection.find({}).populate("postedBy");
+    var allPosts = yield db.postCollection.find({}).populate('postedBy').populate('comments.createdBy');
 
     if (!allPosts) throw new Error(JSON.stringify({"message":"no_posts_found","err_code":400}));
      console.log("UserAPI All Categories:" , allPosts);
@@ -446,6 +447,53 @@ module.exports.unlikeCall = function * (opts){
     }
 
     return  unlikeData;
+   
+  }catch (err){
+     console.error(err.message);
+     throw err;
+  }
+
+}
+
+module.exports.getPostData = function * (opts){
+
+ console.log("Postid in Api:",opts.postid);
+  try {
+
+    var singPostData = yield db.postCollection.findOne({"_id":opts.postid}).populate('postedBy').populate('comments.createdBy').exec();
+   /* var singPostData = yield db.postCollection.findOne({"_id":opts.postid}).populate('postedBy').populate('comments.createdBy').exec();*/
+    console.log("singPostData",singPostData);
+    if(!singPostData){
+      throw new Error(JSON.stringify({"message":"There is some error to unlike post ","err_code":400}));
+    }
+
+    return  singPostData;
+   
+  }catch (err){
+     console.error(err.message);
+     throw err;
+  }
+
+}
+
+module.exports.addComment = function * (opts){
+ console.log("addComment opts in API:",opts);
+  try {
+    if(!opts.commentText){
+       throw new Error(JSON.stringify({"message":"comment text is not entered,please enter text:","err_code":400}));
+    }
+    if(!opts.createdBy|| !opts.postid){
+        //this.throw(404, 'Username and password not entered,plz enter details:');
+          throw new Error(JSON.stringify({"message":"comment creator and post id not entered,plz enter details","err_code":404}));
+    }
+    //var addCommentData = yield db.postCollection.findByIdAndUpdate({"_id":opts.postid},{"$push":{"comments":{"$each":{ "commentText": opts.commentText,"createdBy": opts.createdBy},"$position":0}},"$inc":{"commentcount":1}},{ "new": true });
+    var addCommentData = yield db.postCollection.findOneAndUpdate({"_id":opts.postid},{"$push":{"comments":{"$each":[{ "commentText": opts.commentText,"createdBy": opts.createdBy}],"$position":0}},"$inc":{"commentcount":1}},{ "new": true }).populate('postedBy').populate('comments.createdBy').exec();
+    console.log("addCommentData",addCommentData);
+    if(!addCommentData){
+      throw new Error(JSON.stringify({"message":"There is some error to add comment ","err_code":400}));
+    }
+
+    return  addCommentData;
    
   }catch (err){
      console.error(err.message);
