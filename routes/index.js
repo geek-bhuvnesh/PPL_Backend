@@ -14,40 +14,19 @@ route.post('/register', function*() {
   console.log(" Request body signup ---  " ,this.request.body);
 
   if(this.is('application/json')){
-    // if(!this.request.body.username) {
-    //   this.status = 400;
-    //   this.body = "Username can not be empty";
-    //   return;
-    // }
-
+    
      if (this.request.body.password !== this.request.body.confirm_password) {
         this.status = 400;
-        this.body = 400 + "_password_not_matched";
+        this.body = "Password and confirm password not matched";
         return;
      }
 
     if (!this.request.body.email) {
        this.status = 400;
-       this.body = 400 + "_email_cannot_empty";
+       this.body = "Email Id cannot empty";
        return;
     }
 
-    /*try {
-      var user = yield API.registerUser({
-        "firstname":this.request.body.firstname,
-        "lastname" : this.request.body.lastname,
-        "email":this.request.body.email,
-        "password": this.request.body.password
-      });
-      console.log("user:" ,user);
-      this.body = user;
-    } catch (err) {
-      console.log("Singup Error in Index.js:",err);
-
-     var ERR = JSON.parse(err.message);
-     this.body = ERR.err_code + "_" + ERR.message;
-     this.status = ERR.err_code;
-    }*/
 
     var p = this;
     try {
@@ -55,13 +34,13 @@ route.post('/register', function*() {
         if(err){
           var ERR = JSON.parse(err.message);
           p.status = ERR.err_code;
-          p.body = ERR.err_code + "_" + ERR.message;
+          p.body = ERR.message;
           return;
         }
 
         if(!user){
           p.status = 400;
-          p.body = 400 + "_username_or_password_not_valid";
+          p.body = "Username or password not valid";
           return;
         }
         p.body = user;
@@ -97,7 +76,7 @@ route.get('/verifyuser/:email/:verification_code', function*() {
         console.log("verify user Error in Index.js:",err);
 
         var ERR = JSON.parse(err.message);
-        this.body = ERR.err_code + "_" + ERR.message;
+        this.body = ERR.message;
         this.status = ERR.err_code;
     }
 
@@ -139,12 +118,12 @@ route.post('/login', function*(next) {
       if(err){
         var ERR = JSON.parse(err.message);
         p.status = ERR.err_code;
-        p.body = ERR.err_code + "_" + ERR.message;
+        p.body =  ERR.message;
         return;
       }
       if(!user){
         p.status = 400;
-        p.body = 400 + "_username_or_password_not_valid";
+        p.body = "Username or password not valid";
         return;
       }
       p.body = user;
@@ -186,7 +165,7 @@ route.post('/forgotpassword',function*() {
   } catch (err) {
     console.log("err forgot password in index:",err);
     var ERR = JSON.parse(err.message);
-    this.body = ERR.err_code + "_" + ERR.message;
+    this.body = ERR.message;
     this.status = ERR.err_code;
   }
 });
@@ -213,8 +192,9 @@ route.post('/resetpassword/:email', function *() {
     this.body = user;
     this.status = 200;
   } catch (err) {
+    console.log("Reset Password Error in index:" +JSON.stringify(err));
     var ERR = JSON.parse(err.message);
-    this.body = ERR.err_code + "_" + ERR.message;
+    this.body = ERR.message;
     this.status = ERR.err_code;
   }
 });
@@ -241,7 +221,7 @@ route.post('/post', function*() {
       console.log("err.err_code index:" ,err.err_code);
       console.log("err login:" ,err);*/
      var ERR = JSON.parse(err.message);
-     this.body = ERR.err_code + "_" + ERR.message;
+     this.body = ERR.message;
      this.status = ERR.err_code;
   }
 });
@@ -257,7 +237,7 @@ route.post('/test', function*() {
   } catch (err) {
      console.log("err login:" ,err);
      var ERR = JSON.parse(err.message);
-     this.body = ERR.err_code + "_" + ERR.message;
+     this.body = ERR.message;
      this.status = ERR.err_code;
   }
 });
@@ -298,7 +278,7 @@ route.get('/getAllCategories', function*() {
     this.status = 200;
   } catch (err) {
     var ERR = JSON.parse(err.message);
-    this.body = ERR.err_code + "_" + ERR.message;
+    this.body = EERR.message;
     this.status = ERR.err_code;
   }
 
@@ -379,11 +359,13 @@ route.put('/unlike/:postid', function*() {
 
 });
 
-route.get('/getPost/:postid', function*() {
+route.put('/getPost/:postid', function*() {
     console.log("Requested params:",this.params.postid);
+    console.log("Requested body count:",this.request.body.clickCount);
     try {
       var singlePost = yield API.getPostData({
          "postid":this.params.postid,
+         "clickCount": this.request.body.clickCount
         });
         console.log("singlePost:" ,singlePost);
         this.body = singlePost;

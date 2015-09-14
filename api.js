@@ -58,7 +58,7 @@ module.exports.registerUser = function * (opts){
                 service: 'gmail',
                 auth: {
                     user: 'bhuvnesh.kumar@daffodilsw.com',
-                    pass: '2015meias1rank'
+                    pass: 'techfreak123'
                 }
             });
 
@@ -68,6 +68,7 @@ module.exports.registerUser = function * (opts){
             var mailOptions = {
                   from: 'bhuvnesh.kumar@daffodilsw.com', // sender address
                   to: result.email, // list of receivers
+                  subject: 'Verify your PPL Account', // Subject line
                   text: "http://192.168.100.44:8000/#/verifyuseremail/" + result.email + "/" + result.verification_code // plaintext body
             };
 
@@ -84,7 +85,7 @@ module.exports.registerUser = function * (opts){
 
 	  }else{
 	      //console.log("Post Response:" + JSON.stringify(this.body));
-	      throw new Error(JSON.stringify({"message":"User Already Exists","err_code":404}));
+	      throw new Error(JSON.stringify({"message":"User Already Exist with this Email id","err_code":404}));
       }
     }catch (err){
      console.error(err.message);
@@ -221,13 +222,14 @@ exports.forgotPassword = function*(opts) {
                 service: 'gmail',
                 auth: {
                     user: 'bhuvnesh.kumar@daffodilsw.com',
-                    pass: '2015meias1rank'
+                    pass: 'techfreak123'
                 }
             });
       
             var mailOptions = {
                  from: 'bhuvnesh.kumar@daffodilsw.com', // sender address
                  to: opts.email, // list of receivers
+                 subject: 'Reset Your password',
                  text: "http://192.168.100.44:8000/#/resetpassword/"+ opts.email + "/" + resetPasswordToken   // plaintext body
                         //text: resetPassInfo.password, // plaintext body
             };
@@ -460,7 +462,7 @@ module.exports.getPostData = function * (opts){
  console.log("Postid in Api:",opts.postid);
   try {
 
-    var singPostData = yield db.postCollection.findOne({"_id":opts.postid}).populate('postedBy').populate('comments.createdBy').exec();
+    var singPostData = yield db.postCollection.findOneAndUpdate({"_id":opts.postid},{"$inc":{"clickCount" :1}},{ "new": true }).populate('postedBy').populate('comments.createdBy').exec();
    /* var singPostData = yield db.postCollection.findOne({"_id":opts.postid}).populate('postedBy').populate('comments.createdBy').exec();*/
     console.log("singPostData",singPostData);
     if(!singPostData){
