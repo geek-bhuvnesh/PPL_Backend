@@ -406,7 +406,7 @@ route.put('/flag/:postid', function*() {
     try {
       var flag = yield API.flagCall({
          "postid":this.params.postid,
-         "flagby" : this.request.body.flagby
+         "flagby" :this.request.body.flagby
         });
         console.log("flag:" ,flag);
         this.body = flag;

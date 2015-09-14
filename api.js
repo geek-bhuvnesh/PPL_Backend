@@ -512,11 +512,16 @@ module.exports.flagCall = function * (opts){
 
    /* var likeBy = yield db.postCollection.update({"_id":opts.postid,"likeby" : { "$nin" : [opts.likeby]  } },
                       { $push: {"likeby": opts.likeby }});*/
-    var flagData = yield db.postCollection.findOneAndUpdate({"_id":opts.postid},{"$addToSet": { "flagby": opts.flagby},"$inc":{"flagcount":1} },{ "new": true }).exec();
+    var flagData = yield db.postCollection.update({"_id":opts.postid,"flagby": { "$nin": [ opts.flagby] } },{"$addToSet": { "flagby": opts.flagby},"$inc":{"flagcount":1} },{ "new": true }).exec();
+    
+    
     if(!flagData){
        throw new Error(JSON.stringify({"message":"There is some error to post flag","err_code":400}));
+    } else {
+      var updatedFlagData = yield db.postCollection.findOne({"_id":opts.postid}).exec();
     }
-    return flagData;
+    console.log("Flag Data" ,updatedFlagData);
+    return updatedFlagData;
 
   }catch (err){
      console.error(err.message);
