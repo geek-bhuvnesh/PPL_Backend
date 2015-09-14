@@ -505,4 +505,46 @@ module.exports.addComment = function * (opts){
 }
 
 
+module.exports.flagCall = function * (opts){
+ console.log("flag opts in API:",opts);
+ console.log("flag by in Api:",opts.flagby);
+  try {
+
+   /* var likeBy = yield db.postCollection.update({"_id":opts.postid,"likeby" : { "$nin" : [opts.likeby]  } },
+                      { $push: {"likeby": opts.likeby }});*/
+    var flagData = yield db.postCollection.findOneAndUpdate({"_id":opts.postid},{"$addToSet": { "flagby": opts.flagby},"$inc":{"flagcount":1} },{ "new": true }).exec();
+    if(!flagData){
+       throw new Error(JSON.stringify({"message":"There is some error to post flag","err_code":400}));
+    }
+    return flagData;
+
+  }catch (err){
+     console.error(err.message);
+     throw err;
+  }
+
+}
+
+
+module.exports.unflagCall = function * (opts){
+ console.log("unflag opts in API:",opts);
+ console.log("unflag by in Api:",opts.likeby);
+  try {
+
+    var unflagData = yield db.postCollection.findOneAndUpdate({"_id":opts.postid},{"$pull": { "flagby": opts.flagby },"$inc":{"flagcount":-1}},{ "new": true });
+    console.log("unflagData",unflagData);
+    if(!unflagData){
+      throw new Error(JSON.stringify({"message":"There is some error to unflag post ","err_code":400}));
+    }
+
+    return  unflagData;
+   
+  }catch (err){
+     console.error(err.message);
+     throw err;
+  }
+
+}
+
+
 

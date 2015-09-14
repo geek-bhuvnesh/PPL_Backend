@@ -399,3 +399,45 @@ route.post('/addComment', function*() {
 
 });
 
+
+route.put('/flag/:postid', function*() {
+    console.log("Requested params:",this.params.postid);
+    console.log("Requested body Flag:",this.request.body);
+    try {
+      var flag = yield API.flagCall({
+         "postid":this.params.postid,
+         "flagby" : this.request.body.flagby
+        });
+        console.log("flag:" ,flag);
+        this.body = flag;
+    }catch (err) {
+        console.log("err login:" ,err);
+        var ERR = JSON.parse(err.message);
+        this.body = ERR.message;
+        this.status = ERR.err_code;
+    } 
+
+
+});
+
+route.put('/unflag/:postid', function*() {
+    console.log("Requested params:",this.params.postid);
+    console.log("Requested body Unflag:",this.request.body);
+    try {
+      var unflag = yield API.unflagCall({
+         "postid":this.params.postid,
+         "flagby" : this.request.body.flagby
+        });
+        console.log("unflag:" ,unflag);
+        this.body = unflag;
+    }catch (err) {
+        console.log("err login:" ,err);
+        var ERR = JSON.parse(err.message);
+        this.body = ERR.message;
+        this.status = ERR.err_code;
+    } 
+
+
+});
+
+
