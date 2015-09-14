@@ -401,7 +401,7 @@ module.exports.allPosts = function * () {
  console.log("UserAPI allPosts START");
  try {
 
-    var allPosts = yield db.postCollection.find({}).populate('postedBy').populate('comments.createdBy');
+    var allPosts = yield db.postCollection.find({}).sort({postedOn: 1}).populate('postedBy').populate('comments.createdBy');
 
     if (!allPosts) throw new Error(JSON.stringify({"message":"no_posts_found","err_code":400}));
      console.log("UserAPI All Categories:" , allPosts);

@@ -59,7 +59,8 @@ var postSchema = new Schema({
   likecount :{type:Number,default:0},
   flagby:[{type:String,default:[]}],
   flagcount :{type:Number,default:0},
-  clickCount :{type:Number,default:0}
+  clickCount :{type:Number,default:0},
+  featuredPost: {type:Boolean,default:false}
 
 },{"collection":"postCollection"});
 
