@@ -453,5 +453,39 @@ route.get('/newPosts/:existPostsLength', function*() {
 
 });
 
+route.post('/changepassword/:userId', function *() {
+  console.log("POST /users/" + this.params.userId + "/changepassword handler start");
+  console.log("change password req.body:" ,this.request.body);
+  
+  var validation_errors = [];
+
+  if (!this.request.body && !this.request.body.new_password) {
+    this.body = {};
+    this.body.errors = {password: "new_password is not valid"};
+    this.status = 400;
+    return;  
+  }
+
+  if (!this.request.body && !this.request.body.old_password) {
+    this.body = {};
+    this.body.errors = {password: "old_password is not valid"};
+    this.status = 400;
+    return;  
+  }
+
+  try {
+    var user = yield API.changePassword({
+      id: this.params.userId,
+      old_password: this.request.body ? this.request.body.old_password : null,
+      new_password: this.request.body ? this.request.body.new_password : null
+    });
+    this.body = user;
+    this.status = 200;
+  } catch (err) {
+    var ERR = JSON.parse(err.message);
+    this.body = ERR.message;
+    this.status = ERR.err_code;
+  }
+});
 
 

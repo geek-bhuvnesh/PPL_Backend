@@ -568,4 +568,62 @@ module.exports.newPosts = function * (opts) {
 }
 
 
+/**
+ * changePassword Password and return User
+ *
+ * @param {string} id - Global user id
+ * @param {object} auth_user - user handle of authenticated user
+ * @param {string} old_password - old_password of User
+ * @param {string} new_password - new_password of User
+ *
+ * @return {object} Reset - User
+ */
+
+exports.changePassword = function*(opts) {
+  console.log("UserAPI changePassword START");
+  console.log("changePassword password Api.js:" ,opts);
+  console.log("changePassword password opts.id:" ,opts.id);
+
+  try {
+
+   if (!opts.new_password) {
+    console.log("UserAPI changePassword: New password not given");
+    throw new Error(JSON.stringify({"message":"new_password_cannot_be_blank","err_code":400}));
+   }
+
+   if (!opts.old_password) { //old password is mandatory for Changing own password.
+    console.log("UserAPI changePassword: Old password not given");
+    throw new Error(JSON.stringify({"message":"old_password_cannot_be_blank","err_code":400}));
+   }
+   
+  var user;
+  var filter = {};
+  filter._id = opts.id;
+  user = yield db.userCollection.findOne(filter).exec();
+  
+  if (!user) {
+    throw new Error('User does not exists for id: '+ opts.id);
+  } else if (opts.old_password) {
+    if (!isValidPassword(opts.old_password, user)) {
+      throw new Error(JSON.stringify({"message":"old_password_do_not_match","err_code":400}));
+    }
+  }
+
+   var password = createHash(opts.new_password);
+
+   var changePasswordResult = yield db.userCollection.findOneAndUpdate({"_id":opts.id},{"$set":{"password":password}},{"new":true}).exec();
+  
+   if (!changePasswordResult) {
+      throw new Error(JSON.stringify({"message":"Error in Password changed:","err_code":400}));
+   }
+   return changePasswordResult;
+
+ } catch(err) {
+   console.error(err.message);
+   throw err;
+ }
+
+}
+
+
 
