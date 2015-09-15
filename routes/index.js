@@ -436,8 +436,22 @@ route.put('/unflag/:postid', function*() {
         this.body = ERR.message;
         this.status = ERR.err_code;
     } 
+});
 
+route.get('/newPosts/:existPostsLength', function*() {
+   console.log("Normal Request get request:" +this.params.existPostsLength);
+   try {
+    var newPosts = yield API.newPosts(this.params.existPostsLength);
+    //console.log("New Posts:" ,newPosts);
+    this.body = newPosts;
+    this.status = 200;
+  } catch (err) {
+    var ERR = JSON.parse(err.message);
+    this.body = ERR.err_code + "_" + ERR.message;
+    this.status = ERR.err_code;
+  }
 
 });
+
 
 

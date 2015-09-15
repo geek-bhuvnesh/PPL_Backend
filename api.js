@@ -551,5 +551,21 @@ module.exports.unflagCall = function * (opts){
 
 }
 
+module.exports.newPosts = function * (opts) {
+ console.log("opts:" +opts);
+ try {
+
+    var newPosts = yield db.postCollection.find({}).skip(opts).sort({postedOn: 1}).populate('postedBy').populate('comments.createdBy');
+
+    if (!newPosts) throw new Error(JSON.stringify({"message":"no_posts_found","err_code":400}));
+     return newPosts;
+  }catch (err){
+     console.error(err.message);
+     throw err;
+  }
+ 
+
+}
+
 
 
