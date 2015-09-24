@@ -25,8 +25,11 @@ var userSchema = new Schema({
   reset_pass_token:{type: String,default: ""},
   verification_code:{type:String,default:""},
   verified:{type:String,default:false},
-  role : String,
+  isAdmin: { type: Boolean, default: false },
+  //role : String,
   photo: {type:String,default :""},
+  dob : {type:Date},
+  contact_no :{type:String},
   posts : [{ type: Schema.Types.ObjectId, ref: 'postCollection' }]                                            //['user', 'admin'],
 },{"collection":"userCollection"});
 
@@ -39,7 +42,7 @@ var postSchema = new Schema({
   /*creatorImage: {type:String,default:""},
   creatorName : {type:String,default:""},*/
   postedOn : {type:Date ,default: Date.now},
-  catType : {type:String},
+  catId : {type: mongoose.Schema.Types.ObjectId,ref: 'categoryCollection'},             //{type:String},          
   postImage:{type: String,default: ""},
   comments : [{
                 commentText : {type:String},
@@ -70,6 +73,7 @@ module.exports.postCollection  = mongoose.model('postCollection', postSchema);
 
 
 var categorySchema = new Schema({
+  //catLevel : {type:String},
 	catName : {type:String,default:"others"},
   image : {type:String}
 },{

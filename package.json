@@ -36,6 +36,9 @@
     "koa-passport": "~1.1.6",
     "passport-local": "~1.0.0",
     "co": "~4.6.0",
-    "mongoose-reverse-populate": "~1.1.0"
+    "mongoose-reverse-populate": "~1.1.0",
+    "imagemagick": "~0.1.3",
+    "gm": "~1.18.1",
+    "bluebird": "~2.10.0"
   }
 }

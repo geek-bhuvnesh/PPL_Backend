@@ -5,6 +5,7 @@ var nodemailer = require('nodemailer');
 var crypto = require('crypto');
 var mongoose = require('mongoose');
 var reversePopulate = require('mongoose-reverse-populate');
+var config = require('./config.js');
 
 var encrypt = function(text) {
     
@@ -324,7 +325,7 @@ module.exports.postDetails = function * (opts){
       if (!post._id) {
           throw new Error(JSON.stringify({"message":"post can't be created","err_code":401}));
       } else {          //order important
-          var PostWithUserData = yield db.postCollection.findOne({"_id":post._id}).populate('postedBy').populate('comments.createdBy');
+          var PostWithUserData = yield db.postCollection.findOne({"_id":post._id}).populate('postedBy').populate('comments.createdBy').populate('catId');
           console.log("----------------------------"); 
           console.log("PostWithUserData:",PostWithUserData); 
           return PostWithUserData.toObject();
@@ -387,7 +388,7 @@ module.exports.allCategories = function * () {
     var allCategories = yield db.categoryCollection.find({});
 
     if (!allCategories) throw new Error(JSON.stringify({"message":"no_category_found","err_code":400}));
-     console.log("UserAPI All Categories:" , allCategories);
+     //console.log("UserAPI All Categories:" , allCategories);
      return allCategories;
   }catch (err){
      console.error(err.message);
@@ -396,15 +397,17 @@ module.exports.allCategories = function * () {
  
 }
 
-module.exports.allPosts = function * () {
+module.exports.allPosts = function * (opts) {
 
- console.log("UserAPI allPosts START");
+ console.log("UserAPI allPosts START:" + JSON.stringify(opts));
  try {
 
-    var allPosts = yield db.postCollection.find({}).sort({postedOn: 1}).populate('postedBy').populate('comments.createdBy');
+    var allPosts = yield db.postCollection.find({}).limit(opts.limit).skip(opts.skip).sort({postedOn: -1}).populate('postedBy').populate('comments.createdBy').populate('catId');
 
     if (!allPosts) throw new Error(JSON.stringify({"message":"no_posts_found","err_code":400}));
-     console.log("UserAPI All Categories:" , allPosts);
+     //console.log("UserAPI All Categories:" , allPosts);
+     console.log("All posts Length:" +allPosts.length);
+     console.log("------------------------------");
      return allPosts;
   }catch (err){
      console.error(err.message);
@@ -462,7 +465,7 @@ module.exports.getPostData = function * (opts){
  console.log("Postid in Api:",opts.postid);
   try {
 
-    var singPostData = yield db.postCollection.findOneAndUpdate({"_id":opts.postid},{"$inc":{"clickCount" :1}},{ "new": true }).populate('postedBy').populate('comments.createdBy').exec();
+    var singPostData = yield db.postCollection.findOneAndUpdate({"_id":opts.postid},{"$inc":{"clickCount" :1}},{ "new": true }).populate('postedBy').populate('comments.createdBy').populate('catId').exec();
    /* var singPostData = yield db.postCollection.findOne({"_id":opts.postid}).populate('postedBy').populate('comments.createdBy').exec();*/
     console.log("singPostData",singPostData);
     if(!singPostData){
@@ -551,13 +554,38 @@ module.exports.unflagCall = function * (opts){
 
 }
 
+
 module.exports.newPosts = function * (opts) {
- console.log("opts:" +opts);
+ console.log("opts newPosts:" + JSON.stringify(opts));
+  console.log("currentTime API:" + opts.currentTime);
  try {
 
-    var newPosts = yield db.postCollection.find({}).skip(opts).sort({postedOn: 1}).populate('postedBy').populate('comments.createdBy');
-
+   if(opts.isFlagged == "true"){
+       console.log(">>>>>>>>>>>>>>>isFlagged:" + typeof opts.isFlagged);
+        var newPosts = db.postCollection.find({"flagcount":{"$ne":0},"postedOn":{"$gt": new Date(opts.currentTime)}}).sort({postedOn: -1}).populate('postedBy').populate('comments.createdBy').populate('catId');
+   } else {
+      console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<");
+      if(opts.catType =="ALL" || opts.catType =="Latest First"){
+        var newPosts = db.postCollection.find({"postedOn":{"$gt": new Date(opts.currentTime)}}).sort({postedOn: -1}).populate('postedBy').populate('comments.createdBy').populate('catId');
+          
+       //var newPosts = yield db.postCollection.find({}).skip(opts.existPostsLength).sort({postedOn: 1}).populate('postedBy').populate('comments.createdBy');
+      } else if(opts.catType =="CATS" || opts.catType =="DOGS" || opts.catType =="CATS" ||opts.catType =="BIRDS" || opts.catType =="RABBIT" || opts.catType =="OTHERS") {
+        var newPosts = yield db.postCollection.find({"catType": opts.catType,"postedOn":{"$gt": new Date(opts.currentTime)}}).sort({postedOn: 1}).populate('postedBy').populate('comments.createdBy').populate('catId');
+      } else if(opts.catType =="Oldest First"){
+        //var newPosts = yield db.postCollection.find({}).skip(opts.existPostsLength).sort({postedOn: 1}).populate('postedBy').populate('comments.createdBy');
+      } else if(opts.catType =="Most Pet"){
+         var newPosts = yield db.postCollection.find({"postedOn":{"$gt": new Date(opts.currentTime)}}).sort({likecount: 1}).populate('postedBy').populate('comments.createdBy').populate('catId');
+      } else if(opts.catType =="Most Clicks"){
+         var newPosts = yield db.postCollection.find({"postedOn":{"$gt": new Date(opts.currentTime)}}).sort({clickCount: 1}).populate('postedBy').populate('comments.createdBy').populate('catId');
+      } else if(opts.catType =="Most Commented"){
+         var newPosts = yield db.postCollection.find({"postedOn":{"$gt": new Date(opts.currentTime)}}).sort({commentcount: 1}).populate('postedBy').populate('comments.createdBy').populate('catId');
+      }
+   }
+   
+     console.log("new posts,new post Length:" ,newPosts,newPosts.length);
+    //console.log("newPosts:",newPosts); 
     if (!newPosts) throw new Error(JSON.stringify({"message":"no_posts_found","err_code":400}));
+ 
      return newPosts;
   }catch (err){
      console.error(err.message);
@@ -625,5 +653,82 @@ exports.changePassword = function*(opts) {
 
 }
 
+exports.myProfile = function*(opts) {
+
+    
+ console.log("UserAPI allPosts START" +opts);
+ try {
+
+    var myProfileResult = yield db.userCollection.findOne({"_id":opts.id}).exec();
+
+    if (!myProfileResult) throw new Error(JSON.stringify({"message":"No Deatails found for this user","err_code":400}));
+     console.log("UserAPI myProfileResult:" , myProfileResult);
+     return myProfileResult;
+  }catch (err){
+     console.error(err.message);
+     throw err;
+  }
+
+}
 
 
+module.exports.editProfileFun = function * (opts){
+ console.log("Edit Profile opts in API:",opts);
+
+  try {
+    console.log("date type befor:" +typeof opts.dob)
+  
+    var editProfileData = yield db.userCollection.findOneAndUpdate({"_id":opts.userId},{"$set": {"username":opts.username,"photo": opts.photo,"email":opts.email,"dob":opts.dob,"contact_no":opts.contact_no} },{ "new": true }).exec();
+    console.log("Data :"  ,editProfileData) 
+    console.log("date type after :" +typeof editProfileData.dob);
+    console.log("----------------------------");
+    return editProfileData;
+
+  }catch (err){
+     console.error(err.message);
+     throw err;
+  }
+
+}
+
+
+module.exports.newComments = function * (opts) {
+ console.log("opts newComments:" + JSON.stringify(opts));
+ console.log("skip:" + typeof opts.existCommentsLength);
+ console.log("limit:" + typeof opts.limit);
+ try {
+
+    /*var newComments = db.postCollection.findOne({"_id":opts.postid},{"comments":{"$slice": [ -parseInt(opts.existCommentsLength),parseInt(opts.limit) ]}}).populate('postedBy').populate('comments.createdBy');*/
+    var newComments = db.postCollection.findOne({"_id":opts.postid},{"comments":1}).populate('postedBy').populate('comments.createdBy');    
+     //console.log("New comments:" ,newComments);
+    //console.log("newPosts:",newPosts); 
+    if (!newComments) throw new Error(JSON.stringify({"message":"no_posts_found","err_code":400}));
+ 
+     return newComments;
+  }catch (err){
+     console.error(err.message);
+     throw err;
+  }
+ 
+
+}
+
+
+module.exports.featuredPosts = function * (opts) {
+
+ console.log("UserAPI featuredPosts START:" + JSON.stringify(opts));
+ try {
+
+    var featuredPosts = yield db.postCollection.find({"featuredPost":opts.featuredPostBool}).limit(opts.limit).sort({postedOn: -1}).populate('postedBy').populate('comments.createdBy');
+
+    if (!featuredPosts) throw new Error(JSON.stringify({"message":"no_posts_found","err_code":400}));
+     console.log("featuredPosts Length:" +featuredPosts.length);
+     console.log("------------------------------");
+     return featuredPosts;
+  }catch (err){
+     console.error(err.message);
+     throw err;
+  }
+ 
+
+}

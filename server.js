@@ -12,7 +12,7 @@ var path = require('path');
 var views = require("co-views");
 var passport = require('koa-passport');
 var LocalStrategy = require('passport-local').Strategy;
-
+var config = require('./config');
 
 //They take the data from your http POST and parse it into a more usable state
 app.use(require('koa-cors')({
@@ -61,17 +61,19 @@ app.use(session({
 }));
 
 app.use(bodyParser());
+//app.use(bodyParser.urlencoded({ extended: false }));
 app.use(passport.initialize());
 app.use(passport.session());
 
 /*app.use(multer({ dest: './uploads/'}));*/
 app.use(multer({
-   dest:'fileUpload/uploads',
+   dest:config.server.fileUpload,
+   /*inMemory: true,*/
    rename: function (fieldname, filename, req, res) {
        console.log("fieldname:",fieldname);
        console.log("filename:",filename);
-       console.log("req:",req);
-       console.log("res:",res);
+       /*console.log("req:",req);
+       console.log("res:",res);*/
        return filename.toLowerCase()
    }}
 ));

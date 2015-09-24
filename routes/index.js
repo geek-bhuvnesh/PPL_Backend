@@ -6,6 +6,8 @@ var multer = require('koa-multer');
 var API = require("../api.js");
 var configPassport = require('./passport.js');
 var passport = require('koa-passport');
+var imageModifier = require('../imageModifier.js');
+var config = require('../config.js');
 
 exports = module.exports = route;
 
@@ -210,7 +212,7 @@ route.post('/post', function*() {
      /* "creatorImage":this.request.body.creatorImage,
       "creatorName":this.request.body.creatorName,
       "postedOn":this.request.body.postedOn,*/
-      "catType":this.request.body.catType,
+      "catId":this.request.body.catId,
       "postImage":this.request.body.postImage
      });
      console.log("post:" ,post);
@@ -273,7 +275,7 @@ route.get('/getAllCategories', function*() {
    console.log("Normal Request get request");
    try {
     var allCategories = yield API.allCategories();
-    console.log("All Categories:" ,allCategories);
+    //console.log("All Categories:" ,allCategories);
     this.body = allCategories;
     this.status = 200;
   } catch (err) {
@@ -284,11 +286,14 @@ route.get('/getAllCategories', function*() {
 
 });
 
-route.get('/getAllPosts', function*() {
+route.get('/getAllPosts/:limit/:skip', function*() {
    console.log("Normal Request get request");
    try {
-    var allPosts = yield API.allPosts();
-    console.log("All Posts:" ,allPosts);
+    var allPosts = yield API.allPosts({
+      limit:this.params.limit,
+      skip:this.params.skip
+    });
+    //console.log("All Posts:" ,allPosts);
     this.body = allPosts;
     this.status = 200;
   } catch (err) {
@@ -305,10 +310,20 @@ route.get('/getAllPosts', function*() {
  */
 
 route.post('/imageUpload', function*() {
+  console.log("this.req",this.req);
 
     try {
-       /* console.log("Index:Requested Data:" + JSON.stringify(this.request.body));
-        console.log("Index: Uploaded files:", this.req.files);*/
+        console.log("Index:Requested Data:" + JSON.stringify(this.req.body));
+        console.log("Img Type:" + this.req.body.imgType);
+        console.log("Index: Uploaded files:", this.req.files);
+
+        if(this.req.body.imgType == "user"){
+           yield imageModifier.imageSave(this.req.files.file, 150, 100);
+         } else if(this.req.body.imgType == "post"){
+           yield imageModifier.imageSave(this.req.files.file, 500, 395); 
+         }
+       
+
         this.body = this.req.files.file;
         this.status = 200;
     } catch (err) {
@@ -392,7 +407,7 @@ route.post('/addComment', function*() {
     }catch (err) {
         console.log("err login:" ,err);
         var ERR = JSON.parse(err.message);
-        this.body = ERR.err_code + "_" + ERR.message;
+        this.body = ERR.message;
         this.status = ERR.err_code;
     } 
 
@@ -438,16 +453,23 @@ route.put('/unflag/:postid', function*() {
     } 
 });
 
-route.get('/newPosts/:existPostsLength', function*() {
-   console.log("Normal Request get request:" +this.params.existPostsLength);
+route.get('/newPosts/:catType/:currentTime/:isFlagged', function*() {
+   console.log("Normal Request get request currentTime:" +this.params.currentTime);
+   console.log("Normal Request get catType:" +this.params.catType);
+   console.log("Normal Request get isFlagged:" +this.params.isFlagged);
    try {
-    var newPosts = yield API.newPosts(this.params.existPostsLength);
+  
+    var newPosts = yield API.newPosts({
+      "catType" : this.params.catType,
+      "currentTime" : this.params.currentTime,
+      "isFlagged" : this.params.isFlagged
+    });
     //console.log("New Posts:" ,newPosts);
     this.body = newPosts;
     this.status = 200;
   } catch (err) {
     var ERR = JSON.parse(err.message);
-    this.body = ERR.err_code + "_" + ERR.message;
+    this.body = ERR.message;
     this.status = ERR.err_code;
   }
 
@@ -486,6 +508,89 @@ route.post('/changepassword/:userId', function *() {
     this.body = ERR.message;
     this.status = ERR.err_code;
   }
+});
+
+
+route.get('/myprofile/:userId', function *() {
+  console.log("GET /users/" + this.params.userId + "/ handler start");
+ 
+  try {
+    var getProfileRequestedData ={
+      "id" : this.params.userId
+    }
+    var myProfile = yield API.myProfile(getProfileRequestedData);
+    console.log("myProfile:" ,myProfile);
+    this.body = myProfile;
+    this.status = 200;
+  } catch (err) {
+    var ERR = JSON.parse(err.message);
+    this.body = EERR.message;
+    this.status = ERR.err_code;
+  }
+
+});
+
+route.put('/editprofile/:userId', function*() {
+    console.log("Requested params:",this.params.userId);
+    console.log("Requested body edit Profile:",this.request.body);
+    try {
+      var editProfile = yield API.editProfileFun({
+         "userId": this.params.userId,
+         "photo" : this.request.body.photo,
+         "username": this.request.body.username,
+         "email": this.request.body.email,
+         "dob" : this.request.body.dob,
+         "contact_no" : this.request.body.contact_no
+        });
+        console.log("editProfile:" ,editProfile);
+        this.body = editProfile;
+    }catch (err) {
+        console.log("err login:" ,err);
+        var ERR = JSON.parse(err.message);
+        this.body = ERR.message;
+        this.status = ERR.err_code;
+    } 
+});
+
+
+route.get('/newComments/:postid/:existCommentsLength/:limit', function*() {
+   console.log("Normal Request get request Length:" +this.params.existCommentsLength);
+   console.log("Normal Request get limit:" +this.params.limit);
+   try {
+  
+    var newComments = yield API.newComments({
+      "postid" : this.params.postid,
+      "existCommentsLength" : this.params.existCommentsLength,
+      "limit" : this.params.limit
+    });
+    //console.log("New Posts:" ,newPosts);
+    this.body = newComments;
+    this.status = 200;
+  } catch (err) {
+    var ERR = JSON.parse(err.message);
+    this.body = ERR.message;
+    this.status = ERR.err_code;
+  }
+
+});
+
+
+route.get('/featuredposts/:limit/:featuredPostBool', function*() {
+   console.log("Normal Request get request");
+   try {
+    var featuredPosts = yield API.allPosts({
+      limit:this.params.limit,
+      featuredPostBool:this.params.featuredPostBool
+    });
+    //console.log("All Posts:" ,allPosts);
+    this.body = featuredPosts;
+    this.status = 200;
+  } catch (err) {
+    var ERR = JSON.parse(err.message);
+    this.body = ERR.message;
+    this.status = ERR.err_code;
+  }
+
 });
 
 
